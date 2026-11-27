@@ -3527,11 +3527,11 @@ render();
   unit.classList.add('yu-m56-playing');
   setNav(true);
   const foot=document.getElementById('foot');if(foot)foot.textContent='正由寺院前往市集…';
-  tick(()=>{if(token===stamp)unit.classList.add('yu-m56-film-opaque')},910);
+  
   let begun=false;
   function beginMotion(){
    if(!playing||token!==stamp||begun)return;
-   begun=true;motion.addEventListener('playing',()=>{if(playing&&token===stamp)film.classList.add('has-motion')},{once:true});
+   begun=true;motion.onplaying=()=>{if(playing&&token===stamp){film.classList.add('has-motion');unit.classList.add('yu-m56-film-opaque')}};
    motion.muted=true;motion.controls=false;motion.playsInline=true;
    const p=motion.play();if(p&&p.catch)p.catch(()=>tick(()=>finishWithDissolve(token),1100));
    
@@ -3540,7 +3540,7 @@ render();
   motion.onended=()=>finishWithDissolve(token);
   motion.ontimeupdate=()=>{if(motion.duration>1&&motion.currentTime>=motion.duration-1.25)finishWithDissolve(token)};
   motion.onerror=()=>{if(playing&&token===stamp)tick(()=>finishWithDissolve(token),750)};
-  window.__yuanVideoChunks.load(filmData).then(url=>{if(!playing||token!==stamp)return;motion.src=url;motion.load()}).catch(()=>{if(!playing||token!==stamp)return;motion.src=filmData;motion.load()});
+  window.__yuanVideoChunks.load(filmData).catch(()=>window.__yuanVideoChunks.load(filmData)).then(url=>{if(!playing||token!==stamp)return;motion.src=url;motion.load()}).catch(err=>{if(!playing||token!==stamp)return;console.error('Temple market video unavailable',err);motion.src=filmData;motion.load()});
   tick(()=>{if(playing&&!begun&&token===stamp)finishWithDissolve(token)},30000);
  }
  function sync(){
@@ -3563,7 +3563,7 @@ render();
    scene.classList.remove('is-left','is-right','is-policy','is-exchange','is-fusion');
    scene.classList.add(index===begin?'is-left':'is-right');
    if(index>begin)scene.classList.add(['is-policy','is-exchange','is-fusion'][index-begin-1]);
-   if(index===begin&&prev!==begin&&prev!==begin+1&&prev!==begin+2&&prev!==begin+3){
+   if(index===begin&&prev!==begin){
     start();
    }
    if(index>begin&&playing)finish();
@@ -4315,7 +4315,12 @@ const status=document.createElement('div');status.style.cssText='position:fixed;
 async function worker(){while(jobs.length){const job=jobs.shift();try{await job()}catch(e){try{await job()}catch(e){failed++}}done++;bar.style.width=(100*done/total)+'%';status.textContent='預載 '+Math.floor(100*done/total)+'%';}}
 setTimeout(()=>{Promise.all([worker(),worker(),worker(),worker()]).then(()=>{bar.remove();if(failed)status.textContent='預載完成，'+failed+' 項未能載入';else status.remove()})},300);
 })();
-</script></body></html>
+</script><style id="yu-v371-transition-fix">
+#yuanUnit.yu-jia-focus .yu-military-jia{background:transparent!important;border-color:transparent!important;box-shadow:none!important}
+#yuanUnit.yu-jia-focus .yu-military-jia-host{box-shadow:inset 0 0 0 5px #b18c5e!important}
+#yuanUnit .yu-m56-film-motion{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;display:block!important;object-fit:cover!important;opacity:1!important}
+#yuanUnit.yu-m56-playing .yu-m56-film.has-motion .yu-m56-film-motion{visibility:visible!important}
+</style></body></html>
 <!-- v2.5.7: map hit testing and capital label separation -->
 
 <!-- v2.6: all map image assignments synchronized; province glow contours generated from MAP.png. -->
