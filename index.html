@@ -2438,7 +2438,7 @@ function pauseGif(img){img.removeAttribute('src')}
 function syncUI(){
  for(const id of ['copy','globe','adminMapWrap']){const e=document.getElementById(id);if(e)e.style.opacity=0}
  const badge=document.getElementById('badge');if(badge)badge.textContent='高壓政策';
- const foot=document.getElementById('foot');if(foot)foot.textContent=!ready?'正在走入公堂…':step===0?'按 → 蒙古人毆打漢人':step===1?'按 → 對照漢人毆打蒙古人':step===2?'按 → 比較法律後果':'法律不公 · 比較總結';
+ const foot=document.getElementById('foot');if(foot)foot.textContent='';
  for(const id of ['count','touchCount']){const e=document.getElementById(id);if(e)e.textContent=(index+1)+' / '+states.length}
  for(const id of ['prev','touchPrev']){const e=document.getElementById(id);if(e)e.disabled=!ready && step!==0}
  for(const id of ['next','touchNext']){const e=document.getElementById(id);if(e)e.disabled=(!ready && step!==0)||index===states.length-1}
@@ -2450,10 +2450,10 @@ function applyStep(next){
  unit.classList.remove('yu-court-mongol-hits','yu-court-han-hits','yu-court-summary');
  pauseGif(mongolAction);pauseGif(hanAction);
  mongolStill.src=sources.mongolStill;hanStill.src=sources.hanStill;
- if(next===1){resetGif(mongolAction,sources.mongolAttack);resetGif(hanAction,sources.hanDefend);unit.classList.add('yu-court-mongol-hits');hint.textContent='蒙古人毆打漢人 · 持續循環';}
- else if(next===2){resetGif(mongolAction,sources.mongolDefend);resetGif(hanAction,sources.hanAttack);unit.classList.add('yu-court-han-hits');hint.textContent='漢人毆打蒙古人 · 持續循環';}
- else if(next===3){unit.classList.add('yu-court-summary');hint.textContent='比較兩種情況的法律後果';}
- else{hint.textContent='按 → 開始比較蒙古人與漢人的法律待遇';}
+ if(next===1){resetGif(mongolAction,sources.mongolAttack);resetGif(hanAction,sources.hanDefend);unit.classList.add('yu-court-mongol-hits');hint.textContent='';}
+ else if(next===2){resetGif(mongolAction,sources.mongolDefend);resetGif(hanAction,sources.hanAttack);unit.classList.add('yu-court-han-hits');hint.textContent='';}
+ else if(next===3){unit.classList.add('yu-court-summary');hint.textContent='';}
+ else{hint.textContent='';}
  syncUI();
 }
 
@@ -2616,6 +2616,25 @@ render();
 #yuanUnit .yu-gate-scene.phase-passage.passage-playing .yu-gate-passage.media-ready{opacity:1!important;transition:none!important}
 #yuanUnit .yu-gate-scene.phase-outside.passage-playing .yu-gate-first{visibility:hidden!important;transition:none!important;opacity:0!important}
 </style>
+<script id="yu-v368-video-chunk-loader">
+(()=>{
+ 'use strict';
+ const files={"assets/transition_court_street.mp4":["assets/transition_court_street.mp4.part00","assets/transition_court_street.mp4.part01","assets/transition_court_street.mp4.part02","assets/transition_court_street.mp4.part03","assets/transition_court_street.mp4.part04"],"assets/transition_gate_open.mp4":["assets/transition_gate_open.mp4.part00","assets/transition_gate_open.mp4.part01","assets/transition_gate_open.mp4.part02","assets/transition_gate_open.mp4.part03","assets/transition_gate_open.mp4.part04"],"assets/transition_gate_temple.mp4":["assets/transition_gate_temple.mp4.part00","assets/transition_gate_temple.mp4.part01","assets/transition_gate_temple.mp4.part02","assets/transition_gate_temple.mp4.part03","assets/transition_gate_temple.mp4.part04","assets/transition_gate_temple.mp4.part05","assets/transition_gate_temple.mp4.part06","assets/transition_gate_temple.mp4.part07","assets/transition_gate_temple.mp4.part08","assets/transition_gate_temple.mp4.part09","assets/transition_gate_temple.mp4.part10"],"assets/transition_temple_market.mp4":["assets/transition_temple_market.mp4.part00","assets/transition_temple_market.mp4.part01","assets/transition_temple_market.mp4.part02","assets/transition_temple_market.mp4.part03","assets/transition_temple_market.mp4.part04","assets/transition_temple_market.mp4.part05","assets/transition_temple_market.mp4.part06","assets/transition_temple_market.mp4.part07"]};
+ const pending=new Map();
+ window.__yuanVideoChunks={
+  load(name){
+   if(!files[name])return Promise.resolve(name);
+   if(pending.has(name))return pending.get(name);
+   const task=Promise.all(files[name].map(p=>fetch(p).then(r=>{if(!r.ok)throw new Error('missing '+p);return r.arrayBuffer()})))
+    .then(parts=>URL.createObjectURL(new Blob(parts,{type:'video/mp4'})));
+   pending.set(name,task);
+   return task;
+  }
+ };
+ // Prefetch on entry; the teacher can still skip immediately with Next.
+ for(const n of Object.keys(files))window.__yuanVideoChunks.load(n).catch(()=>{});
+})();
+</script>
 <script id="yu-v347-entrance-script">
 (()=>{
  'use strict';
@@ -2638,8 +2657,8 @@ render();
   <img class="yu-gate-backdrop yu-gate-closed" alt="貢院大門緊閉" />
   <img class="yu-gate-backdrop yu-gate-open" alt="貢院開門後的考試情景" />
   <img class="yu-gate-backdrop yu-gate-first" alt="公堂至貢院影片起始畫格" />
-  <img class="yu-gate-backdrop yu-gate-passage" alt="公堂轉場至貢院，約八秒" />
-  <img class="yu-gate-backdrop yu-gate-door" alt="貢院大門逐漸打開，約八秒" />
+  <video class="yu-gate-backdrop yu-gate-passage" aria-label="公堂轉場至貢院" muted playsinline webkit-playsinline preload="auto"></video>
+  <video class="yu-gate-backdrop yu-gate-door" aria-label="貢院大門打開" muted playsinline webkit-playsinline preload="auto"></video>
   <div class="yu-gate-veil"></div>
   <div class="yu-gate-outside">
     <div class="yu-gate-point"><strong>元初暫停科舉</strong>，未有定期科舉考試。</div>
@@ -2666,8 +2685,8 @@ render();
   closed:'assets/media_098.webp',
   opened:'assets/media_099.webp',
   first:'assets/media_100.webp',
-  passage:'assets/media_101.webp',
-  door:'assets/media_102.webp'
+  passage:'assets/transition_court_street.mp4',
+  door:'assets/transition_gate_open.mp4'
  };
  const media={
   closed:scene.querySelector('.yu-gate-closed'),opened:scene.querySelector('.yu-gate-open'),
@@ -2678,7 +2697,7 @@ render();
  let active=false,step=-1,ready=true,seq=0;let timeouts=[];
  function later(cb,ms){const id=setTimeout(cb,ms);timeouts.push(id);return id}
  function clearTimers(){timeouts.forEach(clearTimeout);timeouts=[];seq++}
- function releaseAnimation(){media.passage.removeAttribute('src');media.door.removeAttribute('src');media.passage.classList.remove('media-ready');media.door.classList.remove('media-ready')}
+ function releaseAnimation(){for(const el of [media.passage,media.door]){el.pause();el.onloadeddata=null;el.onended=null;el.ontimeupdate=null;el.onerror=null;el.removeAttribute('src');el.classList.remove('media-ready');el.load()}}
  function syncUI(){
   for(const id of ['copy','globe','adminMapWrap']){const e=document.getElementById(id);if(e)e.style.opacity=0}
   const badge=document.getElementById('badge');if(badge)badge.textContent='入仕限制';
@@ -2691,14 +2710,24 @@ render();
   const rail=document.getElementById('rail');if(rail)rail.style.width=((index+1)/states.length*100)+'%';
   const range=document.getElementById('timelineRange');if(range){range.max=states.length-1;range.value=index}
  }
- function animate(image,source,duration,done){
-  const stamp=seq;let begun=false;
-  image.onload=()=>begin(); image.onerror=()=>begin();
-  function begin(){if(stamp!==seq||begun||!active)return;begun=true;image.classList.add('media-ready');if(image===media.passage)scene.classList.add('passage-playing');later(()=>{if(stamp===seq&&active)done()},duration)}
-  image.removeAttribute('src');void image.offsetWidth;image.src=source;
-  // On low-memory browsers, fail safely rather than leaving the teacher's next key disabled.
-  later(()=>{if(!begun)begin()},1500);
+ function animate(video,source,duration,done){
+  const stamp=seq;let begun=false,finished=false;
+  const complete=()=>{if(finished||stamp!==seq||!active)return;finished=true;done()};
+  function begin(){if(stamp!==seq||begun||!active)return;begun=true;
+   video.classList.add('media-ready');if(video===media.passage)scene.classList.add('passage-playing');
+   video.muted=true;video.defaultMuted=true;video.playsInline=true;video.controls=false;
+   const promise=video.play();if(promise&&promise.catch)promise.catch(()=>later(complete,1100));
+  }
+  video.onloadeddata=begin;video.oncanplay=begin;video.onended=complete;
+  video.ontimeupdate=()=>{if(Number.isFinite(video.duration)&&video.duration>1&&video.currentTime>=video.duration-.18)complete()};
+  video.onerror=()=>later(complete,800);
+  window.__yuanVideoChunks.load(source).then(url=>{
+    if(stamp!==seq||!active)return;video.src=url;video.load();
+   }).catch(()=>{if(stamp!==seq||!active)return;video.src=source;video.load()});
+  later(()=>{if(!begun&&video.readyState>=2)begin()},1600);
+  later(complete,Math.max(duration,8500)+1200);
  }
+
  function setStep(next,initial){
   clearTimers();releaseAnimation();step=next;ready=true;
   scene.className='yu-gate-scene';
@@ -3119,12 +3148,12 @@ render();
  const film=document.createElement('div');
  film.className='yu-rel-film';
  film.setAttribute('aria-label','貢院沿街前往寺院，無聲轉場');
- film.innerHTML='<img class="yu-rel-film-poster" alt="貢院通往寺院的開場畫格"><img class="yu-rel-film-motion" alt="鏡頭由貢院移往寺院白塔的動畫">';
+ film.innerHTML='<img class="yu-rel-film-poster" alt="貢院通往寺院的開場畫格"><video class="yu-rel-film-motion" muted playsinline webkit-playsinline preload="auto" aria-label="貢院移往寺院無聲轉場"></video>';
  scene.append(film);
  const still=film.querySelector('.yu-rel-film-poster');
  const motion=film.querySelector('.yu-rel-film-motion');
  const openingFrame='assets/media_112.jpg';
- const travelFrames='assets/media_113.webp';
+ const travelFrames='assets/transition_gate_temple.mp4';
  still.src=openingFrame;
  let lastIndex=index,active=false,finished=false,timers=[],serial=0;
  function timer(fn,ms){const t=setTimeout(fn,ms);timers.push(t);return t}
@@ -3142,8 +3171,8 @@ render();
   active=false;finished=true;clear();
   unit.classList.remove('yu-rel-cinematic','yu-rel-cinematic-dissolve');
   film.classList.remove('motion-ready');
-  motion.onload=null;motion.onerror=null;
-  motion.removeAttribute('src');
+  motion.onloadeddata=null;motion.oncanplay=null;motion.onerror=null;motion.onended=null;motion.ontimeupdate=null;motion.pause();
+  motion.removeAttribute('src');motion.load();
   setNavLock(false);
  }
  function dissolve(stamp){
@@ -3158,23 +3187,22 @@ render();
   unit.classList.add('yu-rel-cinematic');
   unit.classList.remove('yu-rel-cinematic-dissolve');
   film.classList.remove('motion-ready');
-  motion.onload=null;motion.onerror=null;motion.removeAttribute('src');
+  motion.onloadeddata=null;motion.oncanplay=null;motion.onerror=null;motion.onended=null;motion.ontimeupdate=null;motion.pause();motion.removeAttribute('src');motion.load();
   setNavLock(true);
   let begun=false;
   function beginMotion(){
    if(!active||stamp!==serial||begun)return;
    begun=true;film.classList.add('motion-ready');
-   // The animation is a one-shot 7.85 s WebP without an audio track.
-   // Dissolve its FINAL frames into the *existing* religion illustration, not a captured temple still.
-   timer(()=>dissolve(stamp),6680);
+   motion.muted=true;motion.controls=false;motion.playsInline=true;
+   const p=motion.play();if(p&&p.catch)p.catch(()=>timer(()=>dissolve(stamp),900));
+   timer(()=>dissolve(stamp),6650);
   }
-  motion.onload=beginMotion;
-  motion.onerror=()=>{if(!active||stamp!==serial)return;timer(()=>dissolve(stamp),900)};
-  // Reset animated-image playback on every fresh visit; no native video controls or autoplay restrictions.
-  void motion.offsetWidth;
-  motion.src=travelFrames;
-  // Decode/watchdog fallback: don't trap the teacher on a loading image.
-  timer(()=>{if(active&&!begun&&stamp===serial)dissolve(stamp)},11000);
+  motion.onloadeddata=beginMotion;motion.oncanplay=beginMotion;
+  motion.onended=()=>dissolve(stamp);
+  motion.ontimeupdate=()=>{if(motion.duration>1&&motion.currentTime>=motion.duration-1.15)dissolve(stamp)};
+  motion.onerror=()=>{if(active&&stamp===serial)timer(()=>dissolve(stamp),700)};
+  window.__yuanVideoChunks.load(travelFrames).then(url=>{if(!active||stamp!==serial)return;motion.src=url;motion.load()}).catch(()=>{if(!active||stamp!==serial)return;motion.src=travelFrames;motion.load()});
+  timer(()=>{if(active&&!begun&&stamp===serial)dissolve(stamp)},10500);
  }
  const priorRender=render;
  render=function(){
@@ -3451,19 +3479,20 @@ render();
     <figure class="yu-m57-fusion-photo"><img alt="現代清真寺及穆斯林聚會照片"/><figcaption>現代清真寺生活</figcaption></figure></div>
   <div class="yu-m56-film" aria-label="寺院至市集的無聲自動轉場">
     <img class="yu-m56-film-poster" alt="" />
-    <img class="yu-m56-film-motion" alt="" />
+    <video class="yu-m56-film-motion" muted playsinline webkit-playsinline preload="auto" aria-label="寺院至市集無聲轉場"></video>
   </div>`;
  scene.querySelector('.yu-m56-pan').src='assets/media_114.webp';
  scene.querySelector('.yu-m56-origin').src=temple.querySelector('.yu-rel-picture').src;
  unit.append(scene);
+ const commonTitle=document.createElement('img');commonTitle.className='yu-v367-shared-cultural-title';commonTitle.alt='文化交流與民族融合';commonTitle.src='assets/title_cultural_exchange_fusion.png';scene.append(commonTitle);
  const film=scene.querySelector('.yu-m56-film');
  const poster=film.querySelector('.yu-m56-film-poster');
  const motion=film.querySelector('.yu-m56-film-motion');
  poster.src='assets/media_115.webp';
- const filmData='assets/media_116.webp';
+ const filmData='assets/transition_temple_market.mp4';
  let wasIndex=index,active=false,playing=false,stamp=0,timers=[];
  function tick(fn,ms){const t=setTimeout(fn,ms);timers.push(t);return t}
- function cancel(){timers.forEach(clearTimeout);timers=[];stamp++;motion.onload=null;motion.onerror=null}
+ function cancel(){timers.forEach(clearTimeout);timers=[];stamp++;motion.onloadeddata=null;motion.oncanplay=null;motion.onerror=null;motion.onended=null;motion.ontimeupdate=null;motion.pause()}
  function setNav(lock){
   for(const id of ['prev','touchPrev','next','touchNext']){
    const el=document.getElementById(id);if(!el)continue;
@@ -3476,7 +3505,7 @@ render();
   unit.classList.remove('yu-m56-playing','yu-m56-film-opaque','yu-m56-film-fade');
   scene.classList.remove('is-film');
   film.classList.remove('has-motion');
-  motion.removeAttribute('src');
+  motion.removeAttribute('src');motion.load();
   setNav(false);
   document.getElementById('foot')?.replaceChildren(document.createTextNode('按 → 畫面向右平移，進入文化交流與民族融合'));
  }
@@ -3491,7 +3520,7 @@ render();
   cancel();playing=true;scene.classList.add('is-film');
   unit.classList.remove('yu-m56-film-opaque','yu-m56-film-fade');
   film.classList.remove('has-motion');
-  motion.removeAttribute('src');
+  motion.removeAttribute('src');motion.load();
   const token=stamp;
   // Force style flush: opacity transition starts at 0 and enters over the temple still.
   void film.offsetWidth;
@@ -3500,15 +3529,19 @@ render();
   const foot=document.getElementById('foot');if(foot)foot.textContent='正由寺院前往市集…';
   tick(()=>{if(token===stamp)unit.classList.add('yu-m56-film-opaque')},910);
   let begun=false;
-  motion.onload=()=>{
+  function beginMotion(){
    if(!playing||token!==stamp||begun)return;
    begun=true;film.classList.add('has-motion');
-   // Full film 7.85 seconds; its last ~1.30 s overlays the EXACT supplied wide market illustration.
+   motion.muted=true;motion.controls=false;motion.playsInline=true;
+   const p=motion.play();if(p&&p.catch)p.catch(()=>tick(()=>finishWithDissolve(token),1100));
    tick(()=>finishWithDissolve(token),6550);
-  };
-  motion.onerror=()=>{if(playing&&token===stamp)tick(()=>finishWithDissolve(token),1000)};
-  motion.src=filmData;
-  tick(()=>{if(playing&&!begun&&token===stamp)finishWithDissolve(token)},11000);
+  }
+  motion.onloadeddata=beginMotion;motion.oncanplay=beginMotion;
+  motion.onended=()=>finishWithDissolve(token);
+  motion.ontimeupdate=()=>{if(motion.duration>1&&motion.currentTime>=motion.duration-1.25)finishWithDissolve(token)};
+  motion.onerror=()=>{if(playing&&token===stamp)tick(()=>finishWithDissolve(token),750)};
+  window.__yuanVideoChunks.load(filmData).then(url=>{if(!playing||token!==stamp)return;motion.src=url;motion.load()}).catch(()=>{if(!playing||token!==stamp)return;motion.src=filmData;motion.load()});
+  tick(()=>{if(playing&&!begun&&token===stamp)finishWithDissolve(token)},10600);
  }
  function sync(){
   unit.classList.add('on','yu-m56-on');
@@ -3782,7 +3815,8 @@ render();
  window.__yuanCultureV359={open:show,close:hide};
 })();
 </script>
-\n<style id="yu-v361-approved-tweaks">
+
+<style id="yu-v361-approved-tweaks">
 /* Progress timeline: compact, readable, translucent so it does not cover the lesson art. */
 #timelineDock{width:min(91vw,734px)!important;height:48px!important;min-height:48px!important;bottom:9px!important;padding:3px 10px!important;gap:7px!important;background:rgba(16,44,58,.69)!important;border-color:rgba(208,178,137,.38)!important;border-radius:10px!important;box-shadow:0 5px 20px rgba(4,17,20,.25)!important;backdrop-filter:blur(8px)!important;-webkit-backdrop-filter:blur(8px)!important}
 #timelineDock button{font-size:24px!important;min-width:32px!important;min-height:32px!important}
@@ -3830,7 +3864,9 @@ render();
 #yuanUnit.yu-v361-end .yu-m56-pan{transform:translate3d(-1102px,0,0)!important;transition:none!important}
 #yuanUnit.yu-v361-end .yu-m56-vignette{opacity:0!important}
 body:has(#yuanUnit.yu-v361-end) #timelineDock,body:has(#yuanUnit.yu-v361-end) #touchDock{opacity:0!important;pointer-events:none!important}
-</style>\n\n<script id="yu-v361-end-and-interaction-fixes">
+</style>
+
+<script id="yu-v361-end-and-interaction-fixes">
 (()=>{
  'use strict';
  const unit=document.getElementById('yuanUnit');
@@ -3925,7 +3961,7 @@ body:has(#yuanUnit.yu-v361-end) #timelineDock,body:has(#yuanUnit.yu-v361-end) #t
    const gate=window.__yuanGateV347?.begin??states.findIndex(s=>(s.title||'').includes('入仕限制｜'));
    const religion=window.__yuanReligionV350?.begin??states.findIndex(s=>(s.title||'').includes('宗教政策｜'));
    const mstart=window.__yuanMarketV356?.begin??originalFinalCount-4;
-   const stops=[[0,'封面'],[1,'蒙古崛起'],[2,'蒙古西征'],[6,'四大汗國'],[8,'蒙古擴張與統一'],[14,'行省制度'],[hi,'四等人制'],[mil,'防範反抗'],[limits,'活動限制'],[shopAt,'經濟掠奪'],[legal,'法律不公'],[gate,'限制入仕'],[religion,'宗教自由'],[mstart,'民族關係'],[blankIndex,'結尾']].filter(([n])=>n>=0&&n<=i);
+   const stops=[[0,'封面'],[1,'蒙古崛起'],[2,'蒙古西征'],[6,'四大汗國'],[8,'蒙古擴張與統一'],[14,'行省制度'],[hi,'四等人制'],[hi+6,'高壓政策'],[mil,'防範反抗'],[limits,'活動限制'],[shopAt,'經濟掠奪'],[legal,'法律不公'],[gate,'限制入仕'],[religion,'宗教自由'],[mstart,'民族關係'],[blankIndex,'結尾']].filter(([n])=>n>=0&&n<=i);
    if(chapter&&stops.length)chapter.textContent=stops.at(-1)[1]+' ▾';
  }
  const previous=render;
@@ -3951,7 +3987,8 @@ body:has(#yuanUnit.yu-v361-end) #timelineDock,body:has(#yuanUnit.yu-v361-end) #t
  render();
  window.__yuanV361={blankIndex,progress};
 })();
-</script>\n
+</script>
+
 
 <style id="yu-v362-standee-and-transition">
 /* Full, uncut original paper-diorama village as the setting immediately after 里甲制. */
@@ -4135,6 +4172,127 @@ body:has(#yuanUnit.yu-v361-end) #timelineDock,body:has(#yuanUnit.yu-v361-end) #t
   previousGo(n);
  };
  window.__yuanTransitionsV366={skip:skipCurrent};
+})();
+</script>
+
+<style id="yu-v367-lesson-polish">
+/* On arrival: military inspection street & 3 explanations only. 甲主/20 households appears upon Next. */
+#yuanUnit.yu-military-on:not(.yu-jia-focus) .yu-military-jia{opacity:0!important;visibility:hidden!important;pointer-events:none!important}
+#yuanUnit.yu-military-on.yu-jia-focus .yu-military-jia{visibility:visible!important}
+/* Remove redundant tutorial cue from legal comparison: teacher drives the slides. */
+#yuanUnit.yu-court-on .yu-court-hint{display:none!important}
+/* Keep mobile movie clips absolutely full bleed, never video UI. */
+#yuanUnit .yu-rel-film-motion,#yuanUnit .yu-m56-film-motion,#yuanUnit .yu-gate-passage,#yuanUnit .yu-gate-door{object-fit:cover!important;object-position:center!important;pointer-events:none!important}
+#yuanUnit video::-webkit-media-controls,#yuanUnit video::-webkit-media-controls-panel{display:none!important}
+/* One hand-painted title across the THREE related cultural sections, with a distinct subheading inside each card. */
+#yuanUnit .yu-v367-shared-cultural-title{position:absolute;z-index:8;left:55px;top:24px;width:735px;height:127px;object-fit:contain;object-position:left center;pointer-events:none;display:none;filter:drop-shadow(0 2px 2px rgba(37,24,17,.33))}
+#yuanUnit .yu-m56-scene.is-right .yu-v367-shared-cultural-title{display:block}
+#yuanUnit .yu-m56-scene.is-right .yu-m56-copy.right{top:169px!important;padding-top:22px!important;padding-bottom:24px!important}
+#yuanUnit .yu-m56-scene.is-right .yu-m56-copy.right .yu-m56-heading{display:block!important;font-size:33px!important;margin:0 0 13px!important;color:#f4dba7!important}
+#yuanUnit .yu-m56-scene.is-right #yu-m57-culture-handtitle{display:none!important}
+#yuanUnit .yu-m56-scene.is-right .yu-m56-copy.right.policy p:first-of-type{margin-top:0!important}
+</style>
+
+<style id="yu-v368-live-layout">
+/* Website layout revision: genuine CSS over existing interactive images, no regenerated artwork. */
+/* 1. Reconcile patrol title and content as one right-hand presentation cluster. */
+#yu-v357-title-art[data-art="control"]{
+  left:1009px!important;top:22px!important;width:505px!important;height:125px!important;
+  object-position:center!important;
+}
+/* 2. A stronger, soft ivory fog behind EVERY existing crimson hand-painted title. */
+#yu-v361-title-mist{
+  width:530px!important;height:153px!important;
+  background:radial-gradient(ellipse at 49% 50%,
+    rgba(249,239,218,.99) 0%,rgba(244,230,199,.90) 31%,
+    rgba(240,222,187,.64) 53%,rgba(240,219,180,.18) 74%,transparent 100%)!important;
+  filter:blur(13px)!important;opacity:.92!important;
+}
+#yuanUnit:has(#yu-v357-title-art[data-art="control"]) #yu-v361-title-mist{
+  left:977px!important;top:14px!important;width:572px!important;height:151px!important;
+}
+/* Original 16:9 marketplace remains visible but deliberately secondary during explanation. */
+#yuanUnit .yu-m56-scene.is-right .yu-m56-copy.right{
+  left:60px!important;top:174px!important;width:1477px!important;
+  height:632px!important;min-height:632px!important;max-height:632px!important;
+  padding:26px 44px 28px!important;box-sizing:border-box!important;
+  border:1px solid rgba(224,202,161,.43)!important;border-left:1px solid rgba(224,202,161,.43)!important;
+  border-radius:7px!important;
+  background:linear-gradient(110deg,rgba(11,35,50,.96),rgba(17,47,64,.91) 56%,rgba(20,48,63,.84))!important;
+  -webkit-backdrop-filter:blur(9px) saturate(.88)!important;
+  backdrop-filter:blur(9px) saturate(.88)!important;
+  box-shadow:0 15px 35px rgba(5,22,29,.32)!important;
+  overflow:visible!important;
+}
+#yuanUnit .yu-m56-scene.is-right .yu-m56-copy.right .yu-m56-heading{
+  display:block!important;visibility:visible!important;
+  font-size:41px!important;line-height:1.17!important;
+  margin:0 0 22px!important;letter-spacing:.04em!important;
+  color:#f2d7a4!important;
+}
+#yuanUnit .yu-m56-scene.is-right .yu-m56-copy.right p,
+#yuanUnit .yu-m56-scene.is-right .yu-m56-copy.right.policy p:first-of-type{
+  font-size:35px!important;line-height:1.46!important;
+  font-weight:580!important;max-width:875px!important;
+  margin:0 0 20px!important;white-space:normal!important;
+  overflow-wrap:normal!important;word-break:normal!important;
+  text-wrap:balance!important;
+}
+#yuanUnit .yu-m56-scene.is-right .yu-m56-copy.right p strong{color:#f4d8a1!important}
+/* Historic figures must dominate the RIGHT side of the reading panel. */
+#yuanUnit .yu-m56-scene.is-right .yu-m57-historic-portrait{
+  right:18px!important;bottom:34px!important;width:454px!important;height:492px!important;
+  object-fit:contain!important;object-position:bottom center!important;
+  filter:drop-shadow(0 13px 16px rgba(0,0,0,.24))!important;
+}
+#yuanUnit .yu-m56-scene.is-right .yu-v361-identity{
+  right:37px!important;bottom:12px!important;max-width:435px!important;
+  font-size:25px!important;line-height:1.26!important;
+  background:rgba(12,31,42,.83)!important;
+  padding:6px 15px!important;
+}
+#yuanUnit .yu-m56-scene.is-right .yu-m56-copy.right.exchange .yu-v359-sources{
+  top:16px!important;right:34px!important;gap:9px!important;
+  max-width:278px!important;
+}
+#yuanUnit .yu-m56-scene.is-right .yu-m56-copy.right.exchange .yu-v359-source{
+  width:275px!important;min-height:81px!important;font-size:26px!important;
+  padding:7px 10px!important;
+}
+#yuanUnit .yu-m56-scene.is-right .yu-m56-copy.right.exchange .yu-v359-source img{
+  width:64px!important;height:66px!important;flex-basis:64px!important;
+}
+#yuanUnit .yu-m56-scene.is-right .yu-m57-fusion-photo{
+  right:45px!important;top:151px!important;width:410px!important;
+  border:1px solid rgba(232,204,163,.63)!important;
+}
+#yuanUnit .yu-m56-scene.is-right .yu-m57-fusion-photo figcaption{
+  font-size:23px!important;padding:8px 11px!important;
+}
+/* Bespoke title bitmap stays unchanged, only the soft backdrop is deepened. */
+#yuanUnit .yu-m56-scene .yu-v368-cultural-title-fog{
+  position:absolute;z-index:7;pointer-events:none;display:none;
+  left:28px;top:0;width:835px;height:168px;
+  background:radial-gradient(ellipse at 47% 49%,
+    rgba(249,236,208,.94) 0%,rgba(243,225,190,.75) 39%,
+    rgba(242,222,190,.33) 64%,transparent 83%);
+  filter:blur(13px);
+}
+#yuanUnit .yu-m56-scene.is-right .yu-v368-cultural-title-fog{display:block}
+#yuanUnit .yu-m56-scene.is-right .yu-v367-shared-cultural-title{
+  z-index:8!important;left:56px!important;top:21px!important;width:755px!important;height:136px!important;
+}
+#yuanUnit.yu-v361-end .yu-v368-cultural-title-fog{display:none!important}
+/* Keep the footer and clickable historical source popups above the lecture panel. */
+#yuanUnit .yu-m56-copy.right.exchange .yu-v359-source{position:relative;z-index:10}
+</style>
+<script id="yu-v368-cultural-title-fog">
+(()=>{
+ const scene=document.querySelector('#yuanUnit .yu-m56-scene');
+ if(!scene || scene.querySelector('.yu-v368-cultural-title-fog'))return;
+ const mist=document.createElement('div');mist.className='yu-v368-cultural-title-fog';
+ const title=scene.querySelector('.yu-v367-shared-cultural-title');
+ if(title)scene.insertBefore(mist,title);else scene.append(mist);
 })();
 </script>
 </body></html>
