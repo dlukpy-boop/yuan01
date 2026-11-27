@@ -2627,12 +2627,12 @@ render();
    if(pending.has(name))return pending.get(name);
    const task=Promise.all(files[name].map(p=>fetch(p).then(r=>{if(!r.ok)throw new Error('missing '+p);return r.arrayBuffer()})))
     .then(parts=>URL.createObjectURL(new Blob(parts,{type:'video/mp4'})));
-   pending.set(name,task);
+   pending.set(name,task);task.catch(()=>{if(pending.get(name)===task)pending.delete(name)});
    return task;
   }
  };
  // Prefetch on entry; the teacher can still skip immediately with Next.
- for(const n of Object.keys(files))window.__yuanVideoChunks.load(n).catch(()=>{});
+ window.__yuanVideoChunks.names=Object.keys(files);
 })();
 </script>
 <script id="yu-v347-entrance-script">
@@ -3507,7 +3507,7 @@ render();
   film.classList.remove('has-motion');
   motion.removeAttribute('src');motion.load();
   setNav(false);
-  document.getElementById('foot')?.replaceChildren(document.createTextNode('按 → 畫面向右平移，進入文化交流與民族融合'));
+  document.getElementById('foot')?.replaceChildren(document.createTextNode(''));
  }
  function finishWithDissolve(token){
   if(!playing||token!==stamp)return;
@@ -3531,10 +3531,10 @@ render();
   let begun=false;
   function beginMotion(){
    if(!playing||token!==stamp||begun)return;
-   begun=true;film.classList.add('has-motion');
+   begun=true;motion.addEventListener('playing',()=>{if(playing&&token===stamp)film.classList.add('has-motion')},{once:true});
    motion.muted=true;motion.controls=false;motion.playsInline=true;
    const p=motion.play();if(p&&p.catch)p.catch(()=>tick(()=>finishWithDissolve(token),1100));
-   tick(()=>finishWithDissolve(token),6550);
+   
   }
   motion.onloadeddata=beginMotion;motion.oncanplay=beginMotion;
   motion.onended=()=>finishWithDissolve(token);
@@ -3546,7 +3546,7 @@ render();
  function sync(){
   unit.classList.add('on','yu-m56-on');
   const label=document.getElementById('badge');if(label)label.textContent='元朝民族關係';
-  const foot=document.getElementById('foot');if(foot&&!playing)foot.textContent=index===begin?'按 → 畫面向右平移，進入文化交流與民族融合':'左右兩側：民族矛盾與文化交流';
+  const foot=document.getElementById('foot');if(foot&&!playing)foot.textContent=index===begin?'':'左右兩側：民族矛盾與文化交流';
   for(const id of ['copy','globe','adminMapWrap']){const el=document.getElementById(id);if(el)el.style.opacity=0}
   for(const id of ['count','touchCount']){const el=document.getElementById(id);if(el)el.textContent=(index+1)+' / '+states.length}
   const rail=document.getElementById('rail');if(rail)rail.style.width=((index+1)/states.length*100)+'%';
@@ -4165,7 +4165,7 @@ body:has(#yuanUnit.yu-v361-end) #timelineDock,body:has(#yuanUnit.yu-v361-end) #t
   if(skipCurrent()){
    // A single Next completes the scene's cinematic bridge without skipping its teaching content.
    // Previous leaves the scene; chapter menu navigation to other sections remains available.
-   if(n<index || Math.abs(n-index)>1)previousGo(n);
+   previousGo(n);
    window.__yuanV361?.progress?.();
    return;
   }
@@ -4295,7 +4295,28 @@ body:has(#yuanUnit.yu-v361-end) #timelineDock,body:has(#yuanUnit.yu-v361-end) #t
  if(title)scene.insertBefore(mist,title);else scene.append(mist);
 })();
 </script>
-</body></html>
+<style id="yu-v369-layout">
+#yuanUnit.yu-v361-end .yu-v367-shared-cultural-title,#yuanUnit.yu-v361-end .yu-v368-cultural-title-fog{display:none!important}
+#yuanUnit .yu-m56-scene.is-right .yu-m56-copy.right.exchange p{width:930px!important;max-width:930px!important;font-size:38px!important;line-height:1.42!important;text-wrap:wrap!important;margin-bottom:17px!important}
+#yuanUnit .yu-m56-scene.is-right .yu-m56-copy.right.exchange .yu-m57-historic-portrait{width:470px!important;height:550px!important;right:12px!important}
+#yuanUnit .yu-m56-scene.is-right .yu-m56-copy.right.exchange .yu-v359-sources{position:relative!important;top:auto!important;right:auto!important;flex-direction:row!important;max-width:930px!important;margin-top:16px!important}
+#yu-v361-title-mist{background:radial-gradient(ellipse,rgba(249,239,218,1) 0%,rgba(244,230,199,.94) 42%,rgba(240,222,187,.55) 65%,transparent 100%)!important}
+</style>
+<script id="yu-v369-preload">
+(()=>{
+const chunks=window.__yuanVideoChunks;if(!chunks)return;
+const warm=new Set();
+function prefetch(){
+ const g=window.__yuanGateV347?.begin,r=window.__yuanReligionV350?.begin,m=window.__yuanMarketV356?.begin;
+ for(const [at,i] of [[g-3,0],[g-1,1],[r-3,2],[m-5,3]]){if(Number.isFinite(at)&&index>=at&&index<=at+7&&!warm.has(i)){warm.add(i);chunks.load(chunks.names[i]).catch(()=>warm.delete(i));}}
+}
+const old=render;render=function(){old();prefetch();};
+const urls=[...new Set(Array.from(document.images).map(i=>i.getAttribute('src')).filter(s=>s&&s.startsWith('assets/')))];
+let done=0;const total=urls.length||1;const bar=document.createElement('div');bar.style.cssText='position:fixed;bottom:0;left:0;height:2px;background:#ad9874;z-index:9999;pointer-events:none;width:0';document.body.append(bar);
+async function worker(){while(urls.length){const im=new Image();im.src=urls.shift();try{await im.decode()}catch(e){}bar.style.width=(100*++done/total)+'%';}}
+setTimeout(()=>{Promise.all([worker(),worker()]).finally(()=>bar.remove());prefetch()},1200);
+})();
+</script></body></html>
 <!-- v2.5.7: map hit testing and capital label separation -->
 
 <!-- v2.6: all map image assignments synchronized; province glow contours generated from MAP.png. -->
