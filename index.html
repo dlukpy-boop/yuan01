@@ -1795,8 +1795,8 @@ function enterMilitary(){
     const p=v362Video.play();
     if(p&&typeof p.catch==='function')p.catch(()=>schedule(beginDissolve,450));
     // Offline-decoder fallback: always settle rather than freeze as a player.
-    schedule(beginDissolve,8500);
-    schedule(()=>{if(index===militaryAt&&folding)settleMilitary()},10300);
+    schedule(()=>{if(v362Video.readyState<2)beginDissolve()},30000);
+    
   },1200);
 }
 
@@ -2490,7 +2490,7 @@ function start(){
  // Reset src on each entry so the one-shot animated GIF starts from its first frame.
  travelVideo.src=travelAnimationData;
  // GIF has fixed 3.76s duration; settle onto the original full-resolution courtroom.
- enterTimer=setTimeout(finishCourtTravel,3860);
+ const startFrame=()=>{if(active&&index===begin&&!travelFinished){clearTimeout(enterTimer);enterTimer=setTimeout(finishCourtTravel,3860)}};travelVideo.onload=startFrame;if(travelVideo.complete&&travelVideo.naturalWidth)startFrame();travelVideo.onerror=()=>{if(active&&index===begin)finishCourtTravel()};
 }
 function exit(){
  clearTimeout(enterTimer);active=false;ready=false;step=-1;travelFinished=false;
@@ -2697,7 +2697,7 @@ render();
  let active=false,step=-1,ready=true,seq=0;let timeouts=[];
  function later(cb,ms){const id=setTimeout(cb,ms);timeouts.push(id);return id}
  function clearTimers(){timeouts.forEach(clearTimeout);timeouts=[];seq++}
- function releaseAnimation(){for(const el of [media.passage,media.door]){el.pause();el.onloadeddata=null;el.onended=null;el.ontimeupdate=null;el.onerror=null;el.removeAttribute('src');el.classList.remove('media-ready');el.load()}}
+ function releaseAnimation(){for(const el of [media.passage,media.door]){el.pause();el.onloadeddata=null;el.oncanplay=null;el.onplaying=null;el.onended=null;el.ontimeupdate=null;el.onerror=null;el.removeAttribute('src');el.classList.remove('media-ready');el.load()}}
  function syncUI(){
   for(const id of ['copy','globe','adminMapWrap']){const e=document.getElementById(id);if(e)e.style.opacity=0}
   const badge=document.getElementById('badge');if(badge)badge.textContent='入仕限制';
@@ -2714,7 +2714,7 @@ render();
   const stamp=seq;let begun=false,finished=false;
   const complete=()=>{if(finished||stamp!==seq||!active)return;finished=true;done()};
   function begin(){if(stamp!==seq||begun||!active)return;begun=true;
-   video.classList.add('media-ready');if(video===media.passage)scene.classList.add('passage-playing');
+   video.onplaying=()=>{if(stamp!==seq||!active)return;video.classList.add('media-ready');if(video===media.passage)scene.classList.add('passage-playing')};
    video.muted=true;video.defaultMuted=true;video.playsInline=true;video.controls=false;
    const promise=video.play();if(promise&&promise.catch)promise.catch(()=>later(complete,1100));
   }
@@ -2725,7 +2725,7 @@ render();
     if(stamp!==seq||!active)return;video.src=url;video.load();
    }).catch(()=>{if(stamp!==seq||!active)return;video.src=source;video.load()});
   later(()=>{if(!begun&&video.readyState>=2)begin()},1600);
-  later(complete,Math.max(duration,8500)+1200);
+  later(()=>{if(!begun)complete()},30000);
  }
 
  function setStep(next,initial){
@@ -3192,17 +3192,17 @@ render();
   let begun=false;
   function beginMotion(){
    if(!active||stamp!==serial||begun)return;
-   begun=true;film.classList.add('motion-ready');
+   begun=true;motion.onplaying=()=>{if(active&&stamp===serial)film.classList.add('motion-ready')};
    motion.muted=true;motion.controls=false;motion.playsInline=true;
    const p=motion.play();if(p&&p.catch)p.catch(()=>timer(()=>dissolve(stamp),900));
-   timer(()=>dissolve(stamp),6650);
+   
   }
   motion.onloadeddata=beginMotion;motion.oncanplay=beginMotion;
   motion.onended=()=>dissolve(stamp);
   motion.ontimeupdate=()=>{if(motion.duration>1&&motion.currentTime>=motion.duration-1.15)dissolve(stamp)};
   motion.onerror=()=>{if(active&&stamp===serial)timer(()=>dissolve(stamp),700)};
   window.__yuanVideoChunks.load(travelFrames).then(url=>{if(!active||stamp!==serial)return;motion.src=url;motion.load()}).catch(()=>{if(!active||stamp!==serial)return;motion.src=travelFrames;motion.load()});
-  timer(()=>{if(active&&!begun&&stamp===serial)dissolve(stamp)},10500);
+  timer(()=>{if(active&&!begun&&stamp===serial)dissolve(stamp)},30000);
  }
  const priorRender=render;
  render=function(){
@@ -3510,7 +3510,7 @@ render();
   document.getElementById('foot')?.replaceChildren(document.createTextNode(''));
  }
  function finishWithDissolve(token){
-  if(!playing||token!==stamp)return;
+  if(!playing||token!==stamp||unit.classList.contains('yu-m56-film-fade'))return;
   unit.classList.add('yu-m56-film-fade');
   // Backplate has been hidden long before the fade starts, so no temple reappears.
   tick(()=>{if(playing&&token===stamp)finish()},1390);
@@ -3541,7 +3541,7 @@ render();
   motion.ontimeupdate=()=>{if(motion.duration>1&&motion.currentTime>=motion.duration-1.25)finishWithDissolve(token)};
   motion.onerror=()=>{if(playing&&token===stamp)tick(()=>finishWithDissolve(token),750)};
   window.__yuanVideoChunks.load(filmData).then(url=>{if(!playing||token!==stamp)return;motion.src=url;motion.load()}).catch(()=>{if(!playing||token!==stamp)return;motion.src=filmData;motion.load()});
-  tick(()=>{if(playing&&!begun&&token===stamp)finishWithDissolve(token)},10600);
+  tick(()=>{if(playing&&!begun&&token===stamp)finishWithDissolve(token)},30000);
  }
  function sync(){
   unit.classList.add('on','yu-m56-on');
@@ -4302,19 +4302,18 @@ body:has(#yuanUnit.yu-v361-end) #timelineDock,body:has(#yuanUnit.yu-v361-end) #t
 #yuanUnit .yu-m56-scene.is-right .yu-m56-copy.right.exchange .yu-v359-sources{position:relative!important;top:auto!important;right:auto!important;flex-direction:row!important;max-width:930px!important;margin-top:16px!important}
 #yu-v361-title-mist{background:radial-gradient(ellipse,rgba(249,239,218,1) 0%,rgba(244,230,199,.94) 42%,rgba(240,222,187,.55) 65%,transparent 100%)!important}
 </style>
-<script id="yu-v369-preload">
+<script id="yu-v370-preload">
 (()=>{
-const chunks=window.__yuanVideoChunks;if(!chunks)return;
-const warm=new Set();
-function prefetch(){
- const g=window.__yuanGateV347?.begin,r=window.__yuanReligionV350?.begin,m=window.__yuanMarketV356?.begin;
- for(const [at,i] of [[g-3,0],[g-1,1],[r-3,2],[m-5,3]]){if(Number.isFinite(at)&&index>=at&&index<=at+7&&!warm.has(i)){warm.add(i);chunks.load(chunks.names[i]).catch(()=>warm.delete(i));}}
-}
-const old=render;render=function(){old();prefetch();};
-const urls=[...new Set(Array.from(document.images).map(i=>i.getAttribute('src')).filter(s=>s&&s.startsWith('assets/')))];
-let done=0;const total=urls.length||1;const bar=document.createElement('div');bar.style.cssText='position:fixed;bottom:0;left:0;height:2px;background:#ad9874;z-index:9999;pointer-events:none;width:0';document.body.append(bar);
-async function worker(){while(urls.length){const im=new Image();im.src=urls.shift();try{await im.decode()}catch(e){}bar.style.width=(100*++done/total)+'%';}}
-setTimeout(()=>{Promise.all([worker(),worker()]).finally(()=>bar.remove());prefetch()},1200);
+const chunks=window.__yuanVideoChunks;
+const names=chunks.names;
+const assets=["assets/media_001.png","assets/media_002.webp","assets/media_003.webp","assets/media_004.webp","assets/media_005.webp","assets/media_006.webp","assets/media_007.webp","assets/media_008.webp","assets/media_009.webp","assets/media_010.png","assets/media_011.png","assets/media_012.png","assets/media_013.png","assets/media_014.png","assets/media_015.webp","assets/media_016.webp","assets/media_017.webp","assets/media_018.webp","assets/media_019.webp","assets/media_020.webp","assets/media_021.webp","assets/media_022.webp","assets/media_023.webp","assets/media_024.webp","assets/media_025.webp","assets/media_026.webp","assets/media_027.webp","assets/media_028.webp","assets/media_029.webp","assets/media_030.webp","assets/media_031.webp","assets/media_032.webp","assets/media_033.webp","assets/media_034.webp","assets/media_035.webp","assets/media_036.png","assets/media_037.webp","assets/media_038.webp","assets/media_039.png","assets/media_040.png","assets/media_041.png","assets/media_042.webp","assets/media_043.png","assets/media_044.png","assets/media_045.png","assets/media_046.png","assets/media_047.png","assets/media_048.png","assets/media_049.png","assets/media_050.png","assets/media_051.png","assets/media_052.png","assets/media_053.png","assets/media_054.png","assets/media_055.png","assets/media_056.png","assets/media_057.png","assets/media_058.png","assets/media_059.png","assets/media_060.png","assets/media_061.png","assets/media_062.png","assets/media_063.png","assets/media_064.png","assets/media_065.png","assets/media_066.png","assets/media_067.png","assets/media_068.png","assets/media_069.webp","assets/media_070.webp","assets/media_071.mp4","assets/media_072.webp","assets/media_073.webp","assets/media_074.webp","assets/media_075.webp","assets/media_076.webp","assets/media_077.webp","assets/media_078.webp","assets/media_079.webp","assets/media_080.webp","assets/media_081.webp","assets/media_082.webp","assets/media_083.webp","assets/media_084.webp","assets/media_085.webp","assets/media_086.webp","assets/media_087.webp","assets/media_088.webp","assets/media_089.webp","assets/media_090.webp","assets/media_091.gif","assets/media_092.gif","assets/media_093.gif","assets/media_094.gif","assets/media_095.png","assets/media_096.png","assets/media_097.gif","assets/transition_court_street.mp4","assets/transition_gate_open.mp4","assets/transition_gate_temple.mp4","assets/transition_temple_market.mp4","assets/media_098.webp","assets/media_099.webp","assets/media_100.webp","assets/media_103.webp","assets/media_104.webp","assets/media_105.jpg","assets/media_106.jpg","assets/media_107.webp","assets/media_108.jpg","assets/media_109.jpg","assets/media_110.webp","assets/media_111.jpg","assets/media_112.jpg","assets/media_114.webp","assets/title_cultural_exchange_fusion.png","assets/media_115.webp","assets/media_117.webp","assets/media_118.webp","assets/media_119.webp","assets/media_120.webp","assets/media_121.webp","assets/media_122.webp","assets/media_123.webp","assets/media_124.webp","assets/media_125.webp","assets/media_126.webp","assets/media_127.webp","assets/media_128.png","assets/media_129.jpg","assets/media_130.jpg"];
+const jobs=assets.filter(s=>!names.includes(s)).map(s=>async()=>{if(s.endsWith('.mp4')){const response=await fetch(s);if(!response.ok)throw Error(s);await response.arrayBuffer();}else{const im=new Image();im.src=s;await im.decode();}});
+for(const name of names)jobs.push(()=>chunks.load(name));
+const total=jobs.length;let done=0,failed=0;
+const bar=document.createElement('div');bar.style.cssText='position:fixed;bottom:0;left:0;height:3px;background:#ad9874;z-index:9999;pointer-events:none;width:0';document.body.append(bar);
+const status=document.createElement('div');status.style.cssText='position:fixed;bottom:8px;right:12px;font:12px sans-serif;color:#ddd;background:#202020aa;padding:3px 6px;z-index:9999;pointer-events:none';document.body.append(status);
+async function worker(){while(jobs.length){const job=jobs.shift();try{await job()}catch(e){try{await job()}catch(e){failed++}}done++;bar.style.width=(100*done/total)+'%';status.textContent='預載 '+Math.floor(100*done/total)+'%';}}
+setTimeout(()=>{Promise.all([worker(),worker(),worker(),worker()]).then(()=>{bar.remove();if(failed)status.textContent='預載完成，'+failed+' 項未能載入';else status.remove()})},300);
 })();
 </script></body></html>
 <!-- v2.5.7: map hit testing and capital label separation -->
