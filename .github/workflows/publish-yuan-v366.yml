@@ -1,0 +1,36 @@
+name: Rebuild Yuan teaching website assets
+on:
+  push:
+    branches: [main]
+    paths: [index.html]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  restore-media:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Restore assets and verify integrity
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f staging/media.b64.part001
+          cat staging/media.b64.part* | base64 --decode > media.zip
+          echo "e4836b35c1b83ca891473b831915a818f50ed5fec9d96b1e90a96847846ed82e  media.zip" | sha256sum --check -
+          unzip -oq media.zip
+          test -f assets/media_001.png
+          test -f assets/media_113.webp
+      - name: Commit static assets for GitHub Pages
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets
+          git rm -r --ignore-unmatch staging
+          git diff --cached --quiet && exit 0
+          git commit -m "Publish complete Yuan v3.66 assets [skip ci]"
+          git push origin HEAD:main
